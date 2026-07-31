@@ -19,59 +19,66 @@ export function QawfScreen() {
   const canStart = state.status === "idle" || state.status === "done" || state.status === "error";
 
   return (
-    <div
-      className="flex flex-col h-screen"
-      style={{ background: "#E9E9E8", color: "#212725" }}
-    >
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+    <div className="flex flex-col h-screen overflow-hidden" style={{ background: "#07071a", color: "#e2e4f0" }}>
+
+      {/* ── Header ── */}
       <header
-        className="flex items-center justify-between px-4 py-2 shrink-0"
+        className="shrink-0 flex items-center justify-between px-4 py-2.5"
         style={{
-          borderBottom: "1px solid rgba(33,39,37,.12)",
-          background: "#E9E9E8",
+          background: "rgba(10,10,30,0.85)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(108,99,255,0.18)",
         }}
       >
-        <div className="flex items-center gap-2">
-          {/* Brand mark */}
+        {/* Brand */}
+        <div className="flex items-center gap-2.5">
           <div
-            className="w-5 h-5 rounded-sm flex items-center justify-center"
-            style={{ background: "#3B38EB" }}
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg,#6c63ff 0%,#38bdf8 100%)",
+              boxShadow: "0 0 12px rgba(108,99,255,0.5)",
+            }}
           >
-            <span className="text-[8px] font-bold text-white" style={{ fontFamily: "var(--font-ibm-plex-mono)" }}>
+            <span className="text-[9px] font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-ibm-plex-mono)" }}>
               QW
             </span>
           </div>
           <span
-            className="text-sm font-semibold tracking-widest uppercase"
-            style={{ fontFamily: "var(--font-barlow)", color: "#212725" }}
+            className="text-sm font-bold tracking-[0.15em] uppercase"
+            style={{
+              fontFamily: "var(--font-barlow)",
+              background: "linear-gradient(90deg,#818cf8,#38bdf8)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
           >
             QAWF
           </span>
           <span
-            className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded-sm"
+            className="hidden sm:inline text-[9px] px-1.5 py-0.5 rounded font-bold tracking-widest"
             style={{
-              background: "#DDDEA1",
-              color: "#212725",
-              fontFamily: "var(--font-barlow)",
-              letterSpacing: "0.05em",
+              fontFamily: "var(--font-ibm-plex-mono)",
+              background: "rgba(56,189,248,0.12)",
+              color: "#38bdf8",
+              border: "1px solid rgba(56,189,248,0.25)",
             }}
           >
             rPPG
           </span>
         </div>
 
-        {/* Right controls */}
+        {/* Controls */}
         <div className="flex items-center gap-2">
           <LocaleToggle />
           {canStart ? (
             <button
               onClick={start}
-              className="text-[11px] font-semibold px-3 py-1.5 rounded-[6px] text-white"
+              className="text-[11px] font-bold px-3.5 py-1.5 rounded-lg text-white tracking-wide"
               style={{
                 fontFamily: "var(--font-barlow)",
-                background: "#3B38EB",
-                letterSpacing: "0.05em",
-                transition: "opacity 200ms ease",
+                background: "linear-gradient(135deg,#6c63ff,#38bdf8)",
+                boxShadow: "0 0 16px rgba(108,99,255,0.4)",
+                letterSpacing: "0.06em",
               }}
             >
               {t("camera.start")}
@@ -79,11 +86,12 @@ export function QawfScreen() {
           ) : isActive ? (
             <button
               onClick={stop}
-              className="text-[11px] font-semibold px-3 py-1.5 rounded-[6px]"
+              className="text-[11px] font-bold px-3.5 py-1.5 rounded-lg tracking-wide"
               style={{
                 fontFamily: "var(--font-barlow)",
-                border: "1px solid rgba(33,39,37,.3)",
-                color: "#212725",
+                border: "1px solid rgba(108,99,255,0.4)",
+                color: "#818cf8",
+                background: "rgba(108,99,255,0.08)",
               }}
             >
               {t("camera.stop")}
@@ -92,94 +100,104 @@ export function QawfScreen() {
         </div>
       </header>
 
-      {/* ── Main content — split-asymmetric ─────────────────────────────────── */}
-      <main className="flex flex-1 overflow-hidden">
-        {/* Left panel — Camera (40%) */}
+      {/* ── Main — stacked on mobile, split on desktop ── */}
+      <main className="flex-1 overflow-hidden flex flex-col md:flex-row">
+
+        {/* Camera — full width on mobile (aspect-video), 40% on desktop */}
         <div
-          className="relative shrink-0"
+          className="w-full md:w-[40%] md:shrink-0 shrink-0"
           style={{
-            width: "40%",
-            minWidth: 200,
-            borderRight: "2px solid rgba(33,39,37,.10)",
+            /* mobile: aspect-video = 16/9 ≈ 56.25% height of width */
+            aspectRatio: "16/9",
+            maxHeight: "40vh",          /* cap on mobile so metrics still show */
           }}
         >
-          <CameraPanel
-            videoRef={videoRef}
-            overlayRef={overlayRef}
-            rois={state.rois}
-            fps={state.fps}
-            confidence={state.confidence}
-            elapsed={state.elapsed}
-            status={state.status}
-          />
-        </div>
-
-        {/* Right panel — Data (60%) */}
-        <div
-          className="flex flex-col flex-1 overflow-y-auto"
-          style={{ background: "#E9E9E8" }}
-        >
-          {/* Waveform bridge */}
+          {/* On desktop override aspect-ratio / maxHeight so it fills the column */}
+          <style>{`
+            @media (min-width: 768px) {
+              .camera-wrapper { aspect-ratio: unset !important; max-height: unset !important; height: 100%; }
+            }
+          `}</style>
           <div
+            className="camera-wrapper w-full h-full"
             style={{
-              borderBottom: "1px solid rgba(33,39,37,.10)",
-              paddingTop: 8,
+              aspectRatio: "16/9",
+              maxHeight: "40vh",
+              borderRight: "1px solid rgba(108,99,255,0.15)",
             }}
           >
-            <WaveformCanvas
-              waveform={state.waveform}
+            <CameraPanel
+              videoRef={videoRef}
+              overlayRef={overlayRef}
+              rois={state.rois}
+              fps={state.fps}
               confidence={state.confidence}
-              height={72}
+              elapsed={state.elapsed}
+              status={state.status}
             />
+          </div>
+        </div>
+
+        {/* Data panel — scrollable */}
+        <div className="flex-1 flex flex-col overflow-y-auto" style={{ background: "transparent" }}>
+
+          {/* Waveform strip */}
+          <div style={{ borderBottom: "1px solid rgba(108,99,255,0.12)", paddingTop: 6 }}>
+            <WaveformCanvas waveform={state.waveform} confidence={state.confidence} height={64} />
           </div>
 
           {/* Algorithm channel strip */}
-          <div className="flex items-center gap-2 px-3 py-1.5 overflow-x-auto"
-            style={{ borderBottom: "1px solid rgba(33,39,37,.08)" }}
+          <div
+            className="flex items-center gap-1.5 px-3 py-2 overflow-x-auto"
+            style={{ borderBottom: "1px solid rgba(108,99,255,0.10)" }}
           >
             {["CHROM", "POS", "PCA", "WIENER", "FUSED"].map((ch, i) => {
-              const colors = ["#3B38EB", "#87B163", "#DDDEA1", "#5C6264", "#212725"];
+              const colors = ["#6c63ff", "#38bdf8", "#a78bfa", "#7dd3fc", "#e0e7ff"];
               return (
                 <span
                   key={ch}
-                  className="shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-sm"
+                  className="shrink-0 text-[9px] font-bold px-2 py-0.5 rounded"
                   style={{
                     fontFamily: "var(--font-ibm-plex-mono)",
-                    background: `${colors[i]}18`,
+                    background: `${colors[i]}14`,
                     color: colors[i],
-                    border: `1px solid ${colors[i]}44`,
+                    border: `1px solid ${colors[i]}30`,
                   }}
                 >
                   {ch}
                 </span>
               );
             })}
-            <span className="ml-auto shrink-0 text-[9px]" style={{ color: "#5C6264", fontFamily: "var(--font-barlow)" }}>
-              QA-WF FUSION
+            <span
+              className="ml-auto shrink-0 text-[9px] font-bold tracking-widest"
+              style={{ color: "rgba(129,140,248,0.5)", fontFamily: "var(--font-barlow)" }}
+            >
+              QA-WF
             </span>
           </div>
 
           {/* 8-metric grid */}
           <div className="flex-1">
-            <MetricsGrid
-              metrics={state.metrics}
-              elapsed={state.elapsed}
-              isActive={isActive}
-            />
+            <MetricsGrid metrics={state.metrics} elapsed={state.elapsed} isActive={isActive} />
           </div>
 
-          {/* Error message */}
+          {/* Error */}
           {state.status === "error" && state.errorMsg && (
-            <div className="mx-3 mb-3 px-3 py-2 rounded-[6px]"
-              style={{ background: "rgba(224,84,84,.1)", border: "1px solid rgba(224,84,84,.3)", color: "#e05454" }}
+            <div
+              className="mx-3 mb-3 px-3 py-2 rounded-xl text-[11px]"
+              style={{
+                background: "rgba(239,68,68,0.08)",
+                border: "1px solid rgba(239,68,68,0.25)",
+                color: "#f87171",
+              }}
             >
-              <span className="text-[11px]">{t(`camera.${state.errorMsg}`)}</span>
+              {t(`camera.${state.errorMsg}`)}
             </div>
           )}
         </div>
       </main>
 
-      {/* ── Disclaimer footer ─────────────────────────────────────────────── */}
+      {/* ── Disclaimer ── */}
       <DisclaimerBanner />
     </div>
   );
