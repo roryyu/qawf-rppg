@@ -50,6 +50,23 @@ const BUFFER_MAX = 180 * 30;     // 180s × 30fps
 const WORKER_INTERVAL_MS = 5000; // dispatch to worker every 5s
 const FACE_THROTTLE_MS = 100;    // FaceMesh detection throttle ~10Hz
 
+// ── Canvas used to draw video frames before passing to TF.js ─────────────────
+// This sidesteps the macOS/Chrome/WebGL bug where reading back a <video> texture
+// returns all-black pixels. We always hand an ImageBitmap-backed canvas to the
+// detector instead of the raw <video> element.
+let _tfCanvas: HTMLCanvasElement | null = null;
+function getTfCanvas(w: number, h: number): HTMLCanvasElement {
+  if (!_tfCanvas) {
+    _tfCanvas = document.createElement("canvas");
+    _tfCanvas.width = w;
+    _tfCanvas.height = h;
+  } else if (_tfCanvas.width !== w || _tfCanvas.height !== h) {
+    _tfCanvas.width = w;
+    _tfCanvas.height = h;
+  }
+  return _tfCanvas;
+}
+
 declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
