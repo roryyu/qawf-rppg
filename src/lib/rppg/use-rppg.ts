@@ -225,7 +225,6 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
     rafRef.current = requestAnimationFrame(frameLoop);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoRef]);
-
   // ── Load TF.js & FaceMesh from CDN ───────────────────────────────────────
   async function loadFaceMesh() {
     if (typeof window === "undefined") return;
