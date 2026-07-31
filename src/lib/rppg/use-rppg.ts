@@ -52,7 +52,8 @@ const FACE_THROTTLE_MS = 100;    // FaceMesh detection throttle ~10Hz
 
 declare global {
   interface Window {
-    tf: typeof import("@tensorflow/tfjs");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tf: any;
     faceLandmarksDetection: {
       createDetector: (model: string, config: object) => Promise<FaceLandmarkDetector>;
       SupportedModels: { MediaPipeFaceMesh: string };
