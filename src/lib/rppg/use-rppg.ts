@@ -266,7 +266,18 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
     if (!window.faceLandmarksDetection) {
       await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.js");
     }
+
+    // ── Force CPU backend to avoid the macOS/Chrome WebGL black-frame bug ──
+    // The WebGL backend on macOS+Chrome with hardware acceleration can return
+    // all-black textures when reading back <video> or <canvas>. The CPU backend
+    // is ~3-5× slower but still fine at 10Hz throttle.
+    try {
+      await window.tf.setBackend("cpu");
+    } catch {
+      // If cpu is unavailable, fall through to whatever is available
+    }
     await window.tf.ready();
+
     const detector = await window.faceLandmarksDetection.createDetector(
       window.faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
       { runtime: "tfjs", refineLandmarks: false, maxFaces: 1 }
