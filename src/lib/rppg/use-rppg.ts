@@ -123,7 +123,6 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
   const offCtxRef    = useRef<OffscreenCanvasRenderingContext2D | null>(null);
   const offCanRef    = useRef<OffscreenCanvas | null>(null);
   const faceDetRef   = useRef<FaceLandmarkDetector | null>(null);
-  const lastFaceRef  = useRef<FaceLandmark | null>(null);
   const lastFaceTime = useRef<number>(0);
   const lastWorkerDispatch = useRef<number>(0);
   const startTime    = useRef<number>(0);
