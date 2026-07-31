@@ -182,15 +182,33 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
     if (faceDetRef.current && now - lastFaceTime.current > FACE_THROTTLE_MS) {
       lastFaceTime.current = now;
       try {
-        const faces = await faceDetRef.current.estimateFaces(video);
+        const vw = video.videoWidth || 640;
+        const vh = video.videoHeight || 480;
+
+        // ── KEY FIX: draw video frame into a plain <canvas> first ────────
+        // Passing <video> directly to TF.js estimateFaces() routes through
+        // WebGL texture upload, which returns all-black on macOS+Chrome with
+        // hardware acceleration. Drawing to a 2D canvas first guarantees
+        // CPU-readable pixel data regardless of the GPU backend.
+        const tfCv = getTfCanvas(vw, vh);
+        const tfCtx = tfCv.getContext("2d", { willReadFrequently: true });
+        if (tfCtx) {
+          tfCtx.drawImage(video, 0, 0, vw, vh);
+        }
+
+        const faces = await faceDetRef.current.estimateFaces(tfCv);
         if (faces.length > 0) {
-          roiRef.current = computeROIs(faces[0], video.videoWidth, video.videoHeight);
+          roiRef.current = computeROIs(faces[0], vw, vh);
           if (statusRef.current === "detecting") {
             statusRef.current = "measuring";
             setState((prev) => ({ ...prev, status: "measuring", rois: roiRef.current }));
+          } else {
+            // Keep UI rois updated while measuring
+            setState((prev) => ({ ...prev, rois: roiRef.current }));
           }
         } else {
           roiRef.current = [];
+          setState((prev) => ({ ...prev, rois: [] }));
         }
       } catch {
         // face detection may fail briefly — tolerate
