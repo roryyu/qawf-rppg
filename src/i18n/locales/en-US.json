@@ -34,36 +34,59 @@
       "backHome": "Back to home"
     }
   },
-  "starter": {
-    "badge": "Eazo App Starter",
-    "title": "Build your next app with Eazo",
-    "subtitle": "Demo artifacts are removed. You now have a clean foundation with auth, data access, and platform integrations ready for your product.",
-    "steps": {
-      "readDocs": {
-        "title": "Read the docs",
-        "desc": "Open AGENTS.md and README.md to understand the template architecture.",
-        "code": "AGENTS.md + README.md"
-      },
-      "replacePage": {
-        "title": "Replace this page",
-        "desc": "Move your product UI into src/components and keep page.tsx thin.",
-        "code": "src/app/page.tsx"
-      },
-      "firstFeature": {
-        "title": "Build your first feature",
-        "desc": "Add API routes under src/app/api and call them from typed helpers.",
-        "code": "src/app/api/*"
-      },
-      "translations": {
-        "title": "Add translations",
-        "desc": "Edit en-US / zh-CN strings in src/i18n/locales. LanguageSwitcher and I18nProvider in layout.tsx are already wired.",
-        "code": "src/i18n/locales/"
-      }
-    },
-    "nextCommand": {
-      "title": "Next command",
-      "desc": "Start developing and iterate in real time.",
-      "command": "bun dev"
-    }
+  "app": {
+    "title": "QAWF · Vital Signs Monitor",
+    "tagline": "Face your camera, know your vitals."
+  },
+  "status": {
+    "idle": "Ready",
+    "requesting": "Requesting camera…",
+    "detecting": "Detecting face…",
+    "measuring": "Measuring",
+    "done": "Complete",
+    "error": "Error",
+    "no_face": "No face detected — adjust position"
+  },
+  "camera": {
+    "start": "Start Measurement",
+    "stop": "Stop",
+    "restart": "Restart",
+    "fps": "FPS",
+    "confidence": "Confidence",
+    "elapsed": "Elapsed",
+    "permission_denied": "Camera access denied. Please allow camera permission and refresh.",
+    "not_supported": "Camera not supported in this browser."
+  },
+  "metrics": {
+    "hr": { "label": "Heart Rate", "unit": "BPM", "abbr": "HR" },
+    "rr": { "label": "Respiration", "unit": "/min", "abbr": "RR" },
+    "spo2": { "label": "SpO₂", "unit": "%", "abbr": "SpO₂", "experimental": "true" },
+    "rmssd": { "label": "RMSSD", "unit": "ms", "abbr": "RMSSD" },
+    "lfhf": { "label": "LF/HF Ratio", "unit": "", "abbr": "LF/HF" },
+    "si": { "label": "Stress Index", "unit": "", "abbr": "SI" },
+    "fi": { "label": "Fatigue Index", "unit": "/100", "abbr": "FI", "heuristic": "true" },
+    "mwi": { "label": "Cognitive Load", "unit": "/100", "abbr": "MWI", "heuristic": "true" },
+    "pending": "--",
+    "gating_label": "Need {{seconds}}s more"
+  },
+  "waveform": {
+    "title": "rPPG Pulse Waveform",
+    "fused": "Fused",
+    "chrom": "CHROM",
+    "pos": "POS",
+    "pca": "PCA"
+  },
+  "disclaimer": {
+    "title": "Not a Medical Device",
+    "body": "QAWF provides physiological reference indicators for wellness purposes only. It must not be used for diagnosis, treatment, or clinical decisions. Consult a healthcare professional for medical advice.",
+    "experimental_note": "* SpO₂, FI, MWI are experimental or heuristic — interpret with caution."
+  },
+  "report": {
+    "title": "Measurement Report",
+    "interpret": "AI Interpretation",
+    "interpreting": "Generating interpretation…",
+    "error": "Interpretation failed. Please retry.",
+    "copy": "Copy",
+    "copied": "Copied!"
   }
 }
