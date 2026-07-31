@@ -10,7 +10,11 @@ export function LocaleToggle() {
 
   useEffect(() => {
     const pref = getLocalePreference();
-    setLocale(pref === "system" ? navigator.language.startsWith("zh") ? "zh-CN" : "en-US" : pref);
+    setLocale(
+      pref === "system"
+        ? navigator.language.startsWith("zh") ? "zh-CN" : "en-US"
+        : pref
+    );
   }, []);
 
   function toggle() {
@@ -22,18 +26,18 @@ export function LocaleToggle() {
   return (
     <button
       onClick={toggle}
-      className="text-[10px] px-2 py-1 rounded-sm font-semibold tracking-wider uppercase"
+      className="text-[10px] px-2.5 py-1 rounded-lg font-bold tracking-widest uppercase"
       style={{
-        fontFamily: "var(--font-barlow)",
-        color: "#3B38EB",
-        border: "1px solid rgba(59,56,235,0.4)",
-        background: "transparent",
+        fontFamily: "var(--font-ibm-plex-mono)",
+        color: "#818cf8",
+        border: "1px solid rgba(108,99,255,0.25)",
+        background: "rgba(108,99,255,0.06)",
         cursor: "pointer",
-        transition: "background 200ms ease",
+        transition: "background 200ms ease, border-color 200ms ease",
       }}
       aria-label={t("language.label")}
     >
-      {locale === "zh-CN" ? t("language.enUS") : t("language.zhCN")}
+      {locale === "zh-CN" ? "EN" : "中"}
     </button>
   );
 }
