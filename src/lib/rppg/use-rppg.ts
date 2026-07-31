@@ -324,6 +324,7 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
     };
 
     setState((prev) => ({ ...prev, status: "detecting" }));
+    statusRef.current = "detecting";
     running.current = true;
     startTime.current = performance.now();
     fpsTime.current = performance.now();
