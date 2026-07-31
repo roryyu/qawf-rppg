@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { getResolvedLocale } from "@/lib/i18n/locale";
 import type { Metrics8 } from "@/lib/rppg/rppg-worker";
 
 // ── Web Speech API types ──────────────────────────────────────────────────────
@@ -105,7 +104,7 @@ export function TipsModal({ metrics, onClose }: TipsModalProps) {
     setGenState("loading");
     setTipsText("");
 
-    const locale = getResolvedLocale();
+    const locale = i18n.language === "zh-CN" ? "zh-CN" : "en-US";
 
     try {
       const res = await fetch("/api/report/interpret", {
