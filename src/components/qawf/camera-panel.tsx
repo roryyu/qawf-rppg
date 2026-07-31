@@ -14,26 +14,15 @@ interface CameraPanelProps {
   status: MeasureStatus;
 }
 
-/** Draws ROI rectangles onto the overlay canvas, scaled to canvas display size */
-export function CameraPanel({
-  videoRef,
-  overlayRef,
-  rois,
-  fps,
-  confidence,
-  elapsed,
-  status,
-}: CameraPanelProps) {
+export function CameraPanel({ videoRef, overlayRef, rois, fps, confidence, elapsed, status }: CameraPanelProps) {
   const { t } = useTranslation();
   const animRef = useRef<number | null>(null);
 
-  // ROI overlay draw loop
   useEffect(() => {
     function draw() {
       const canvas = overlayRef.current;
       const video = videoRef.current;
       if (!canvas || !video) { animRef.current = requestAnimationFrame(draw); return; }
-
       const ctx = canvas.getContext("2d");
       if (!ctx) { animRef.current = requestAnimationFrame(draw); return; }
 
@@ -41,54 +30,64 @@ export function CameraPanel({
       const vh = video.videoHeight || 480;
       canvas.width = vw;
       canvas.height = vh;
-
       ctx.clearRect(0, 0, vw, vh);
 
-      // Scan-line effect
-      ctx.fillStyle = "rgba(59,56,235,0.03)";
-      for (let y = 0; y < vh; y += 4) {
-        ctx.fillRect(0, y, vw, 1);
-      }
+      // Subtle scan-line
+      ctx.fillStyle = "rgba(108,99,255,0.025)";
+      for (let y = 0; y < vh; y += 3) ctx.fillRect(0, y, vw, 1);
 
       // ROI boxes
+      const roiColors = ["#6c63ff", "#38bdf8", "#a78bfa"];
       rois.forEach((roi, idx) => {
-        const colors = ["#DDDEA1", "#3B38EB", "#87B163"];
-        const c = colors[idx % colors.length];
-        ctx.strokeStyle = c;
-        ctx.lineWidth = 1.5;
+        const c = roiColors[idx % roiColors.length];
+        // Dashed rect
+        ctx.strokeStyle = c + "99";
+        ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
         ctx.strokeRect(roi.x, roi.y, roi.w, roi.h);
         ctx.setLineDash([]);
 
-        // Corner marks
-        const cLen = 8;
+        // Corner brackets
+        const cL = 10;
         ctx.strokeStyle = c;
         ctx.lineWidth = 2;
-        ctx.setLineDash([]);
         [
-          [roi.x, roi.y, cLen, 0, 0, cLen],
-          [roi.x + roi.w, roi.y, -cLen, 0, 0, cLen],
-          [roi.x, roi.y + roi.h, cLen, 0, 0, -cLen],
-          [roi.x + roi.w, roi.y + roi.h, -cLen, 0, 0, -cLen],
-        ].forEach(([x, y, dx1, dy1, dx2, dy2]) => {
+          [roi.x, roi.y, cL, 0, 0, cL],
+          [roi.x + roi.w, roi.y, -cL, 0, 0, cL],
+          [roi.x, roi.y + roi.h, cL, 0, 0, -cL],
+          [roi.x + roi.w, roi.y + roi.h, -cL, 0, 0, -cL],
+        ].forEach(([x, y, , , , dy2]) => {
+          const dx1 = (x === roi.x) ? cL : -cL;
           ctx.beginPath();
           ctx.moveTo(x + dx1, y);
           ctx.lineTo(x, y);
           ctx.lineTo(x, y + dy2);
           ctx.stroke();
-          void dx2; void dy1;
         });
+
+        // Glowing dot at top-left corner
+        ctx.beginPath();
+        ctx.arc(roi.x, roi.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = c;
+        ctx.fill();
+        ctx.shadowColor = c;
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.shadowBlur = 0;
       });
 
-      // Face detection cross-hair
+      // Detecting cross-hair
       if (rois.length === 0 && status === "detecting") {
         const cx = vw / 2, cy = vh / 2;
-        ctx.strokeStyle = "rgba(59,56,235,0.5)";
+        ctx.strokeStyle = "rgba(108,99,255,0.6)";
         ctx.lineWidth = 1;
-        ctx.setLineDash([4, 6]);
-        ctx.beginPath(); ctx.moveTo(cx - 30, cy); ctx.lineTo(cx + 30, cy); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx, cy - 30); ctx.lineTo(cx, cy + 30); ctx.stroke();
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath(); ctx.moveTo(cx - 40, cy); ctx.lineTo(cx + 40, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, cy - 40); ctx.lineTo(cx, cy + 40); ctx.stroke();
         ctx.setLineDash([]);
+        // Circle
+        ctx.strokeStyle = "rgba(108,99,255,0.3)";
+        ctx.beginPath(); ctx.arc(cx, cy, 60, 0, Math.PI * 2); ctx.stroke();
       }
 
       animRef.current = requestAnimationFrame(draw);
@@ -102,18 +101,19 @@ export function CameraPanel({
   const ss = String(elapsedSec % 60).padStart(2, "0");
 
   return (
-    <div className="relative w-full h-full overflow-hidden" style={{ background: "#212725" }}>
-      {/* Video element */}
+    <div
+      className="relative w-full h-full overflow-hidden"
+      style={{ background: "#0c0c22" }}
+    >
+      {/* Video */}
       <video
         ref={videoRef}
-        autoPlay
-        playsInline
-        muted
+        autoPlay playsInline muted
         className="w-full h-full object-cover"
         style={{ transform: "scaleX(-1)", display: status === "idle" ? "none" : "block" }}
       />
 
-      {/* Overlay canvas for ROI rects */}
+      {/* ROI overlay */}
       <canvas
         ref={overlayRef}
         className="absolute inset-0 w-full h-full pointer-events-none"
@@ -122,61 +122,98 @@ export function CameraPanel({
 
       {/* Idle placeholder */}
       {status === "idle" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <circle cx="24" cy="24" r="22" stroke="#3B38EB" strokeWidth="1.5" strokeDasharray="4 4" />
-            <circle cx="24" cy="24" r="10" stroke="#3B38EB" strokeWidth="1.5" />
-            <circle cx="24" cy="24" r="3" fill="#3B38EB" />
-          </svg>
-          <span className="text-xs text-brand-muted" style={{ fontFamily: "var(--font-barlow)" }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+          {/* Animated rings */}
+          <div className="relative w-16 h-16">
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                border: "1px solid rgba(108,99,255,0.3)",
+                animation: "ping 2s cubic-bezier(0,0,0.2,1) infinite",
+              }}
+            />
+            <div
+              className="absolute inset-2 rounded-full"
+              style={{ border: "1px solid rgba(56,189,248,0.4)" }}
+            />
+            <div
+              className="absolute inset-[22px] rounded-full"
+              style={{ background: "linear-gradient(135deg,#6c63ff,#38bdf8)", boxShadow: "0 0 16px rgba(108,99,255,0.6)" }}
+            />
+          </div>
+          <span
+            className="text-xs tracking-widest uppercase"
+            style={{ fontFamily: "var(--font-barlow)", color: "rgba(129,140,248,0.7)" }}
+          >
             {t("camera.start")}
           </span>
         </div>
       )}
 
-      {/* Status bar — top */}
+      {/* Top status bar */}
       {status !== "idle" && (
         <div
           className="absolute top-0 left-0 right-0 px-3 py-1.5 flex items-center justify-between"
-          style={{ background: "rgba(33,39,37,0.7)", backdropFilter: "blur(4px)" }}
+          style={{
+            background: "linear-gradient(to bottom, rgba(7,7,26,0.85), transparent)",
+            backdropFilter: "blur(2px)",
+          }}
         >
-          <span
-            className="text-[10px] tracking-wider uppercase font-semibold"
-            style={{ fontFamily: "var(--font-barlow)", color: "#DDDEA1" }}
-          >
-            {t(`status.${status}`)}
-          </span>
-          <div className="flex items-center gap-3">
-            <span className="text-[10px]" style={{ fontFamily: "var(--font-ibm-plex-mono)", color: "#87B163" }}>
-              {fps} {t("camera.fps")}
+          <div className="flex items-center gap-1.5">
+            {/* Pulsing dot */}
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{
+                background: status === "measuring" ? "#6c63ff" : "#38bdf8",
+                boxShadow: `0 0 6px ${status === "measuring" ? "#6c63ff" : "#38bdf8"}`,
+                display: "inline-block",
+              }}
+            />
+            <span
+              className="text-[10px] tracking-widest uppercase font-semibold"
+              style={{ fontFamily: "var(--font-barlow)", color: "#818cf8" }}
+            >
+              {t(`status.${status}`)}
             </span>
-            <span className="text-[10px]" style={{ fontFamily: "var(--font-ibm-plex-mono)", color: "#E9E9E8" }}>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px]" style={{ fontFamily: "var(--font-ibm-plex-mono)", color: "#38bdf8" }}>
+              {fps} fps
+            </span>
+            <span className="text-[10px]" style={{ fontFamily: "var(--font-ibm-plex-mono)", color: "rgba(226,228,240,0.7)" }}>
               {mm}:{ss}
             </span>
           </div>
         </div>
       )}
 
-      {/* Confidence bar — bottom */}
+      {/* Bottom confidence bar */}
       {status === "measuring" && (
         <div
-          className="absolute bottom-0 left-0 right-0 px-3 py-1.5 flex items-center gap-2"
-          style={{ background: "rgba(33,39,37,0.7)", backdropFilter: "blur(4px)" }}
+          className="absolute bottom-0 left-0 right-0 px-3 py-2 flex items-center gap-2"
+          style={{
+            background: "linear-gradient(to top, rgba(7,7,26,0.85), transparent)",
+          }}
         >
-          <span className="text-[10px] shrink-0" style={{ fontFamily: "var(--font-barlow)", color: "#5C6264" }}>
+          <span className="text-[9px] shrink-0 tracking-widest uppercase" style={{ fontFamily: "var(--font-barlow)", color: "rgba(129,140,248,0.6)" }}>
             {t("camera.confidence")}
           </span>
-          <div className="flex-1 h-1 rounded-full" style={{ background: "rgba(255,255,255,.15)" }}>
+          <div className="flex-1 h-[3px] rounded-full" style={{ background: "rgba(108,99,255,0.15)" }}>
             <div
               className="h-full rounded-full"
               style={{
                 width: `${confidence}%`,
-                background: confidence > 60 ? "#87B163" : confidence > 30 ? "#DDDEA1" : "#e05454",
+                background: confidence > 60
+                  ? "linear-gradient(90deg,#6c63ff,#38bdf8)"
+                  : confidence > 30
+                    ? "linear-gradient(90deg,#a78bfa,#6c63ff)"
+                    : "#f87171",
                 transition: "width 400ms ease",
+                boxShadow: confidence > 60 ? "0 0 8px rgba(56,189,248,0.5)" : "none",
               }}
             />
           </div>
-          <span className="text-[10px] shrink-0" style={{ fontFamily: "var(--font-ibm-plex-mono)", color: "#E9E9E8" }}>
+          <span className="text-[10px] shrink-0" style={{ fontFamily: "var(--font-ibm-plex-mono)", color: "#818cf8" }}>
             {confidence}%
           </span>
         </div>
@@ -185,8 +222,8 @@ export function CameraPanel({
       {/* No face warning */}
       {status === "measuring" && rois.length === 0 && (
         <div
-          className="absolute bottom-10 left-0 right-0 px-3 py-1 text-center text-[11px]"
-          style={{ color: "#DDDEA1", fontFamily: "var(--font-barlow)" }}
+          className="absolute bottom-10 left-0 right-0 text-center text-[10px] tracking-wider"
+          style={{ color: "#38bdf8", fontFamily: "var(--font-barlow)" }}
         >
           {t("status.no_face")}
         </div>
