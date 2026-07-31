@@ -15,15 +15,24 @@ type GenState   = "idle" | "loading" | "streaming" | "done" | "error";
 // ── MediaRecorder support check ───────────────────────────────────────────────
 function mediaRecorderSupported(): boolean {
   if (typeof window === "undefined") return false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return !!(navigator.mediaDevices?.getUserMedia && (window as any).MediaRecorder);
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hasMR = typeof (window as any).MediaRecorder !== "undefined";
+    const hasMic = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    return hasMR && hasMic;
+  } catch {
+    return false;
+  }
 }
 
 // ── Pick best audio MIME type for the browser ─────────────────────────────────
 function bestMimeType(): string {
   const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];
   for (const t of candidates) {
-    if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(t)) return t;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (typeof (window as any).MediaRecorder !== "undefined" && (window as any).MediaRecorder.isTypeSupported(t)) return t;
+    } catch { /* ignore */ }
   }
   return "";
 }
