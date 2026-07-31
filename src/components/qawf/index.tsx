@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRppg } from "@/lib/rppg/use-rppg";
 import { CameraPanel } from "@/components/qawf/camera-panel";
@@ -8,15 +8,41 @@ import { MetricsGrid } from "@/components/qawf/metrics-grid";
 import { WaveformCanvas } from "@/components/qawf/waveform-canvas";
 import { DisclaimerBanner } from "@/components/qawf/disclaimer-banner";
 import { LocaleToggle } from "@/components/qawf/locale-toggle";
+import { TipsModal } from "@/components/qawf/tips-modal";
+import type { Metrics8 } from "@/lib/rppg/rppg-worker";
+
+/** Returns true only when all 8 metrics have a numeric value */
+function allMetricsReady(m: Metrics8 | null): m is Metrics8 {
+  if (!m) return false;
+  return (
+    m.hr    !== null &&
+    m.rr    !== null &&
+    m.spo2  !== null &&
+    m.rmssd !== null &&
+    m.lfhf  !== null &&
+    m.si    !== null &&
+    m.fi    !== null &&
+    m.mwi   !== null
+  );
+}
 
 export function QawfScreen() {
   const { t } = useTranslation();
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef  = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLCanvasElement | null>(null);
   const { state, start, stop } = useRppg(videoRef);
 
-  const isActive = state.status === "measuring" || state.status === "detecting";
-  const canStart = state.status === "idle" || state.status === "done" || state.status === "error";
+  const [showTips, setShowTips] = useState(false);
+
+  const isActive  = state.status === "measuring" || state.status === "detecting";
+  const canStart  = state.status === "idle" || state.status === "done" || state.status === "error";
+  const metricsOK = allMetricsReady(state.metrics);
+
+  function handleGenerateTips() {
+    // Stop data collection first, then open modal
+    if (isActive) stop();
+    setShowTips(true);
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: "#07071a", color: "#e2e4f0" }}>
@@ -106,13 +132,8 @@ export function QawfScreen() {
         {/* Camera — full width on mobile (aspect-video), 40% on desktop */}
         <div
           className="w-full md:w-[40%] md:shrink-0 shrink-0"
-          style={{
-            /* mobile: aspect-video = 16/9 ≈ 56.25% height of width */
-            aspectRatio: "16/9",
-            maxHeight: "40vh",          /* cap on mobile so metrics still show */
-          }}
+          style={{ aspectRatio: "16/9", maxHeight: "40vh" }}
         >
-          {/* On desktop override aspect-ratio / maxHeight so it fills the column */}
           <style>{`
             @media (min-width: 768px) {
               .camera-wrapper { aspect-ratio: unset !important; max-height: unset !important; height: 100%; }
@@ -138,7 +159,7 @@ export function QawfScreen() {
           </div>
         </div>
 
-        {/* Data panel — scrollable */}
+        {/* Data panel */}
         <div className="flex-1 flex flex-col overflow-y-auto" style={{ background: "transparent" }}>
 
           {/* Waveform strip */}
@@ -181,6 +202,34 @@ export function QawfScreen() {
             <MetricsGrid metrics={state.metrics} elapsed={state.elapsed} isActive={isActive} />
           </div>
 
+          {/* ── Generate Tips button — appears when all 8 metrics are ready ── */}
+          {metricsOK && (
+            <div className="px-3 pb-3 pt-1">
+              <button
+                onClick={handleGenerateTips}
+                className="w-full py-3 rounded-xl font-bold text-sm text-white relative overflow-hidden"
+                style={{
+                  fontFamily: "var(--font-barlow)",
+                  background: "linear-gradient(135deg, #6c63ff 0%, #a78bfa 50%, #38bdf8 100%)",
+                  boxShadow: "0 0 28px rgba(108,99,255,0.45), 0 4px 16px rgba(0,0,0,0.3)",
+                  letterSpacing: "0.06em",
+                  backgroundSize: "200% 200%",
+                  animation: "shimmer 3s ease infinite",
+                }}
+              >
+                {/* Shimmer overlay */}
+                <span
+                  className="absolute inset-0 opacity-20 pointer-events-none"
+                  style={{
+                    background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.5) 50%, transparent 60%)",
+                    animation: "shimmer-slide 2.5s ease-in-out infinite",
+                  }}
+                />
+                <span className="relative z-10">{t("tips.btn")}</span>
+              </button>
+            </div>
+          )}
+
           {/* Error */}
           {state.status === "error" && state.errorMsg && (
             <div
@@ -199,6 +248,22 @@ export function QawfScreen() {
 
       {/* ── Disclaimer ── */}
       <DisclaimerBanner />
+
+      {/* ── Tips Modal ── */}
+      {showTips && state.metrics && (
+        <TipsModal
+          metrics={state.metrics}
+          onClose={() => setShowTips(false)}
+        />
+      )}
+
+      {/* Shimmer animation */}
+      <style>{`
+        @keyframes shimmer-slide {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(200%);  }
+        }
+      `}</style>
     </div>
   );
 }
