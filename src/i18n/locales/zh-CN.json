@@ -88,5 +88,24 @@
     "error": "解读失败，请重试。",
     "copy": "复制",
     "copied": "已复制！"
+  },
+  "tips": {
+    "btn": "✨ 生成 Tips",
+    "modal_title": "AI 健康 Tips",
+    "modal_subtitle": "先说说你现在的心情，AI 来帮你解读今天的状态 🎯",
+    "voice_hint": "点击麦克风，说出你的心情…",
+    "voice_listening": "正在聆听，说吧…",
+    "voice_done": "听到了！可以修改或直接生成",
+    "voice_not_supported": "当前浏览器不支持语音识别，请直接输入",
+    "voice_error": "语音识别出了点问题，可以直接打字~",
+    "input_placeholder": "描述一下当前心情，比如：有点累但还好，心情不错…",
+    "generate": "生成 Tips 🚀",
+    "generating": "正在分析你的状态…",
+    "retry": "重新生成",
+    "close": "关闭",
+    "copy": "复制 Tips",
+    "copied": "已复制！",
+    "tips_error": "生成失败了，再试一次？",
+    "mood_label": "心情描述"
   }
 }
