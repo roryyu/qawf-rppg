@@ -239,13 +239,13 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
         ctx.drawImage(video, 0, 0, oc.width, oc.height);
 
         let r = 0, g = 0, b = 0;
-        for (const roi of roiRef.current) {
+        for (const roi of activeRois) {
           const pixel = sampleROI(ctx, roi);
           r += pixel.r; g += pixel.g; b += pixel.b;
         }
-        r /= roiRef.current.length;
-        g /= roiRef.current.length;
-        b /= roiRef.current.length;
+        r /= activeRois.length;
+        g /= activeRois.length;
+        b /= activeRois.length;
 
         bufferRef.current.push({ t: now, r, g, b });
         if (bufferRef.current.length > BUFFER_MAX) {
