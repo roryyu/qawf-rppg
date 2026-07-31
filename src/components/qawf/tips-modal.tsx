@@ -134,10 +134,8 @@ export function TipsModal({ metrics, onClose }: TipsModalProps) {
         if (tipsRef.current) tipsRef.current.scrollTop = tipsRef.current.scrollHeight;
       }
 
-      // Detect error sentinel written by route when LLM call fails
-      if (fullText.startsWith("__ERROR__:")) {
-        console.error("[TipsModal] LLM error:", fullText);
-        setTipsText("");
+      // If stream completed but we got nothing meaningful, treat as error
+      if (!fullText.trim()) {
         setGenState("error");
         return;
       }
