@@ -1,5 +1,5 @@
-import { HomePage } from "@/components/home";
+import { QawfScreen } from "@/components/qawf";
 
 export default function Home() {
-  return <HomePage />;
+  return <QawfScreen />;
 }
