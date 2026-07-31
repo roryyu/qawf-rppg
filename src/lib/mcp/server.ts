@@ -1,23 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {
-  registerListTodos,
-  registerGetTodo,
-  registerCreateTodo,
-  registerUpdateTodo,
-  registerDeleteTodo,
-} from "./tools";
 
-export function buildMcpServer(userId: string): McpServer {
+export function buildMcpServer(_userId: string): McpServer {
   const server = new McpServer({
-    name: "eazo-todos",
+    name: "eazo-mcp",
     version: "1.0.0",
   });
 
-  registerListTodos(server, userId);
-  registerGetTodo(server, userId);
-  registerCreateTodo(server, userId);
-  registerUpdateTodo(server, userId);
-  registerDeleteTodo(server, userId);
+  // Register your tools here. See AGENTS.md § 8 for the pattern:
+  //   import { registerMyTool } from "./tools/my-tool";
+  //   registerMyTool(server, _userId);
 
   return server;
 }
