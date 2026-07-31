@@ -99,6 +99,7 @@ Style rules:
             if (delta) controller.enqueue(encoder.encode(delta));
           }
         } catch (err) {
+          console.error("[interpret] stream error:", err);
           controller.enqueue(encoder.encode(`\n[ERROR] ${(err as Error).message}`));
         } finally {
           controller.close();
@@ -116,6 +117,23 @@ Style rules:
     });
   } catch (err) {
     const msg = (err as Error).message ?? "AI unavailable";
-    return NextResponse.json({ error: msg }, { status: 503 });
+    console.error("[interpret] top-level error:", msg);
+    // Return error as a plain-text stream so the client ReadableStream reader
+    // doesn't hang — wrap in 200 so the browser body reader can consume it,
+    // but prefix with a sentinel the client can detect.
+    const encoder = new TextEncoder();
+    const errStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(`__ERROR__: ${msg}`));
+        controller.close();
+      },
+    });
+    return new Response(errStream, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
   }
 }
