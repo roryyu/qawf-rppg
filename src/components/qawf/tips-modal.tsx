@@ -15,7 +15,8 @@ type GenState   = "idle" | "loading" | "streaming" | "done" | "error";
 // ── MediaRecorder support check ───────────────────────────────────────────────
 function mediaRecorderSupported(): boolean {
   if (typeof window === "undefined") return false;
-  return !!(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return !!(navigator.mediaDevices?.getUserMedia && (window as any).MediaRecorder);
 }
 
 // ── Pick best audio MIME type for the browser ─────────────────────────────────
