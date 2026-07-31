@@ -4,33 +4,35 @@ import { useTranslation } from "react-i18next";
 
 export function DisclaimerBanner() {
   const { t } = useTranslation();
-
   return (
     <div
-      className="px-4 py-2 flex flex-col gap-0.5"
+      className="shrink-0 px-4 py-2"
       style={{
-        background: "rgba(33,39,37,0.06)",
-        borderTop: "1px solid rgba(33,39,37,.12)",
+        background: "rgba(7,7,26,0.9)",
+        borderTop: "1px solid rgba(108,99,255,0.12)",
       }}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
         <span
-          className="text-[9px] font-semibold tracking-widest uppercase px-1.5 py-0.5 rounded-sm"
+          className="shrink-0 text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded mt-0.5"
           style={{
-            background: "#DDDEA1",
-            color: "#212725",
+            background: "rgba(108,99,255,0.12)",
+            color: "#818cf8",
+            border: "1px solid rgba(108,99,255,0.2)",
             fontFamily: "var(--font-barlow)",
           }}
         >
           {t("disclaimer.title")}
         </span>
-        <span className="text-[10px] text-brand-muted leading-tight flex-1">
-          {t("disclaimer.body")}
-        </span>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[10px] leading-snug" style={{ color: "rgba(226,228,240,0.4)" }}>
+            {t("disclaimer.body")}
+          </span>
+          <span className="text-[9px]" style={{ color: "rgba(129,140,248,0.35)" }}>
+            {t("disclaimer.experimental_note")}
+          </span>
+        </div>
       </div>
-      <span className="text-[9px]" style={{ color: "#5C6264" }}>
-        {t("disclaimer.experimental_note")}
-      </span>
     </div>
   );
 }
