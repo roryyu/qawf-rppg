@@ -123,13 +123,25 @@ export function TipsModal({ metrics, onClose }: TipsModalProps) {
       setGenState("streaming");
       const reader  = res.body!.getReader();
       const decoder = new TextDecoder();
+      let fullText  = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        setTipsText((prev) => prev + decoder.decode(value, { stream: true }));
+        const chunk = decoder.decode(value, { stream: true });
+        fullText += chunk;
+        setTipsText(fullText);
         if (tipsRef.current) tipsRef.current.scrollTop = tipsRef.current.scrollHeight;
       }
+
+      // Detect error sentinel written by route when LLM call fails
+      if (fullText.startsWith("__ERROR__:")) {
+        console.error("[TipsModal] LLM error:", fullText);
+        setTipsText("");
+        setGenState("error");
+        return;
+      }
+
       setGenState("done");
     } catch {
       setGenState("error");
