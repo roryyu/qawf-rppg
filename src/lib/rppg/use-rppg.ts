@@ -167,14 +167,12 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
       try {
         const faces = await faceDetRef.current.estimateFaces(video);
         if (faces.length > 0) {
-          lastFaceRef.current = faces[0];
           roiRef.current = computeROIs(faces[0], video.videoWidth, video.videoHeight);
           if (statusRef.current === "detecting") {
             statusRef.current = "measuring";
             setState((prev) => ({ ...prev, status: "measuring", rois: roiRef.current }));
           }
         } else {
-          lastFaceRef.current = null;
           roiRef.current = [];
         }
       } catch {
