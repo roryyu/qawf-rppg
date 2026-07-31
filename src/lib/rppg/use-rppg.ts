@@ -392,8 +392,15 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
     try {
       faceDetRef.current = (await loadFaceMesh()) ?? null;
     } catch {
-      // FaceMesh unavailable — continue without ROI tracking
+      // FaceMesh unavailable — continue with fallback-center ROI
       faceDetRef.current = null;
+    }
+
+    // If FaceMesh failed to load, transition straight to measuring
+    // (the frame loop will use a fallback-center ROI)
+    if (!faceDetRef.current && statusRef.current === "detecting") {
+      statusRef.current = "measuring";
+      setState((prev) => ({ ...prev, status: "measuring" }));
     }
 
     rafRef.current = requestAnimationFrame(frameLoop);
