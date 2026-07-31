@@ -216,7 +216,21 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
     }
 
     // ── Sample ROI pixels ─────────────────────────────────────────────────
-    if (roiRef.current.length > 0) {
+    // If FaceMesh is unavailable or hasn't detected a face yet, fall back to
+    // a central forehead-approximate ROI so rPPG sampling can still run.
+    const activeRois = roiRef.current.length > 0
+      ? roiRef.current
+      : (() => {
+          const vw = video.videoWidth || 640;
+          const vh = video.videoHeight || 480;
+          return [{
+            x: vw * 0.30, y: vh * 0.10,
+            w: vw * 0.40, h: vh * 0.25,
+            label: "fallback-center",
+          }];
+        })();
+
+    if (activeRois.length > 0) {
       const oc = offCanRef.current;
       const ctx = offCtxRef.current;
       if (oc && ctx) {
