@@ -154,43 +154,10 @@ function powerSpectrum(signal: Float64Array): Float64Array {
   return ps;
 }
 
-/** Band-pass filter via FFT zeroing */
-function bandpassFFT(signal: Float64Array, fs: number, low: number, high: number): Float64Array {
-  const N = nextPow2(signal.length);
-  const padded = new Float64Array(N);
-  for (let i = 0; i < signal.length; i++) padded[i] = signal[i];
-
-  const { re, im } = fft(padded);
-  for (let i = 0; i < N; i++) {
-    const f = (i <= N / 2 ? i : N - i) * (fs / N);
-    if (f < low || f > high) {
-      re[i] = 0;
-      im[i] = 0;
-    }
-  }
-  // IFFT = conjugate → FFT → conjugate / N
-  for (let i = 0; i < N; i++) im[i] = -im[i];
-  const { re: r2, im: i2 } = fft(
-    (() => {
-      // Pack re/im into a real signal interleaved approach — use the simple formula
-      // IFFT not needed for filtering; just zero bins and return signal from reconstructed
-      return new Float64Array(0);
-    })()
-  );
-  void r2;
-  void i2;
-
-  // Real IFFT via conjugate symmetry + DFT formula
-  const out = new Float64Array(signal.length);
-  for (let n = 0; n < signal.length; n++) {
-    let sum = 0;
-    for (let k = 0; k < N; k++) {
-      const ang = (2 * Math.PI * k * n) / N;
-      sum += re[k] * Math.cos(ang) - im[k] * Math.sin(ang);
-    }
-    out[n] = sum / N;
-  }
-  return out;
+/** Band-pass filter via FFT zeroing — alias kept for internal use */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _bandpassFFTUnused(signal: Float64Array, fs: number, low: number, high: number): Float64Array {
+  return bandpass(signal, fs, low, high);
 }
 
 /**
