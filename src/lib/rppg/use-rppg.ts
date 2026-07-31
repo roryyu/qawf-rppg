@@ -131,6 +131,7 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
   const fpsTime      = useRef<number>(0);
   const roiRef       = useRef<ROIRect[]>([]);
   const running      = useRef<boolean>(false);
+  const statusRef    = useRef<MeasureStatus>("idle");
 
   // ── Cleanup ──────────────────────────────────────────────────────────────
   const stopAll = useCallback(() => {
