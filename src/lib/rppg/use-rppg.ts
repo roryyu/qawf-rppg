@@ -196,7 +196,7 @@ export function useRppg(videoRef: React.RefObject<HTMLVideoElement | null>) {
           tfCtx.drawImage(video, 0, 0, vw, vh);
         }
 
-        const faces = await faceDetRef.current.estimateFaces(tfCv);
+        const faces = await faceDetRef.current.estimateFaces(tfCv as unknown as HTMLVideoElement);
         if (faces.length > 0) {
           roiRef.current = computeROIs(faces[0], vw, vh);
           if (statusRef.current === "detecting") {
