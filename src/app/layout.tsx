@@ -74,7 +74,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={cn("h-full antialiased", inter.variable, barlow.variable, ibmPlexMono.variable)}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="h-full flex flex-col overflow-hidden">
         <I18nProvider>
           <EazoProvider>
             <LocaleSyncEffect />
