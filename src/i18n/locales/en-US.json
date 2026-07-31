@@ -88,5 +88,24 @@
     "error": "Interpretation failed. Please retry.",
     "copy": "Copy",
     "copied": "Copied!"
+  },
+  "tips": {
+    "btn": "✨ Get Tips",
+    "modal_title": "AI Health Tips",
+    "modal_subtitle": "Tell me how you're feeling — AI will read your vibe 🎯",
+    "voice_hint": "Tap the mic and describe your mood…",
+    "voice_listening": "Listening, go ahead…",
+    "voice_done": "Got it! Edit or generate directly",
+    "voice_not_supported": "Voice not supported in this browser, type it instead",
+    "voice_error": "Mic had a hiccup — just type your mood~",
+    "input_placeholder": "e.g. a bit tired but okay, feeling good today…",
+    "generate": "Generate Tips 🚀",
+    "generating": "Analyzing your state…",
+    "retry": "Regenerate",
+    "close": "Close",
+    "copy": "Copy Tips",
+    "copied": "Copied!",
+    "tips_error": "Generation failed — want to try again?",
+    "mood_label": "Your mood"
   }
 }
