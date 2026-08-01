@@ -107,6 +107,9 @@
     "copy": "复制 Tips",
     "copied": "已复制！",
     "tips_error": "生成失败了，再试一次？",
-    "mood_label": "心情描述"
+    "mood_label": "心情描述",
+    "avatar_generating": "正在为你绘制卡通形象…",
+    "avatar_alt": "你的卡通形象",
+    "avatar_retry": "重试生成"
   }
 }

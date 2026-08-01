@@ -107,6 +107,9 @@
     "copy": "Copy Tips",
     "copied": "Copied!",
     "tips_error": "Generation failed — want to try again?",
-    "mood_label": "Your mood"
+    "mood_label": "Your mood",
+    "avatar_generating": "Drawing your cartoon…",
+    "avatar_alt": "Your cartoon avatar",
+    "avatar_retry": "Retry"
   }
 }
