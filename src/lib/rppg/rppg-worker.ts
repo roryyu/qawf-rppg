@@ -497,18 +497,23 @@ function computeSI(ibi: number[]): number | null {
 
 /**
  * FI 疲劳指数 (0–100, 启发式)
- * 只要 hr + rmssd 有值即可计算，无需等待 lfhf
+ * 只要 hr + rmssd 有值即可计算。
+ * rmssd clamp 到 10–120ms 防止噪声极端值把结果压到 0。
  */
 function computeFI(hr: number | null, rmssd: number | null): number | null {
   if (hr === null || rmssd === null) return null;
-  // 心率高 + RMSSD低 → 疲劳高
-  return Math.min(100, Math.max(0, Math.round(50 + 0.6 * (hr - 70) - 0.5 * (rmssd - 40))));
+  // 典型 rmssd 范围 15–80ms；超出说明 IBI 仍有噪声，保守截断
+  const safeRmssd = Math.min(120, Math.max(10, rmssd));
+  // 心率越高、rmssd 越低 → 疲劳越高
+  const raw = 50 + 0.6 * (hr - 70) - 0.5 * (safeRmssd - 40);
+  return Math.min(100, Math.max(0, Math.round(raw)));
 }
 
 /**
  * MWI 认知负荷 (0–100, 启发式)
- * 优先使用 lfhf；若 lfhf 尚无数据，用 SI 做线性映射替代
- * SI 典型范围 50–300：映射到等效 lfhf 1.0–3.0
+ * 优先使用 lfhf；若 lfhf 尚无数据，用 SI 做线性映射替代。
+ * SI 典型范围 20–300：映射到等效 lfhf 0.8–3.0。
+ * rmssd clamp 同 FI。
  */
 function computeMWI(
   lfhf: number | null,
@@ -517,20 +522,21 @@ function computeMWI(
 ): number | null {
   if (rmssd === null) return null;
 
+  const safeRmssd = Math.min(120, Math.max(10, rmssd));
+
   let effectiveLfhf: number;
   if (lfhf !== null) {
-    effectiveLfhf = lfhf;
+    effectiveLfhf = Math.min(5, Math.max(0.2, lfhf));
   } else if (si !== null) {
-    // SI 50 → lfhf≈1.0, SI 300 → lfhf≈3.0，线性插值
-    effectiveLfhf = 1.0 + ((si - 50) / 250) * 2.0;
+    // SI 20→lfhf 0.8, SI 300→lfhf 3.0，线性插值
+    effectiveLfhf = 0.8 + ((si - 20) / 280) * 2.2;
     effectiveLfhf = Math.min(4, Math.max(0.5, effectiveLfhf));
   } else {
     return null;
   }
 
-  return Math.min(100, Math.max(0,
-    Math.round(40 + 12 * (effectiveLfhf - 1.5) + 0.4 * (50 - rmssd))
-  ));
+  const raw = 40 + 12 * (effectiveLfhf - 1.5) + 0.4 * (50 - safeRmssd);
+  return Math.min(100, Math.max(0, Math.round(raw)));
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
