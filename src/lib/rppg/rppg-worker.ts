@@ -592,12 +592,18 @@ self.onmessage = (ev: MessageEvent) => {
   const rr    = computeRR(Gn, FS);     // respiration modulates G channel
   const spo2  = computeSpO2(R, G, B);
   const rmssd = ibi.length >= 10 && elapsedSec >= 20  ? computeRMSSD(ibi) : null;
-  const lfhf  = elapsedSec >= 60  ? computeLFHF(ibi, FS) : null;  // try from 60s; internal gate handles quality
+  const lfhf  = elapsedSec >= 60  ? computeLFHF(ibi, FS) : null;
   const si    = ibi.length >= 20 && elapsedSec >= 60   ? computeSI(ibi) : null;
-  // FI: only needs hr + rmssd (available ~30s)
   const fi    = computeFI(hr, rmssd);
-  // MWI: uses lfhf when available, falls back to si-derived estimate
   const mwi   = computeMWI(lfhf, rmssd, si);
+
+  // Debug log — remove before release
+  // eslint-disable-next-line no-console
+  console.log("[worker]", {
+    elapsed: Math.round(elapsedSec), peaks: peaks.length, ibi: ibi.length,
+    hr, rmssd, lfhf, si, fi, mwi,
+    ibiSample: ibi.slice(0, 5).map(v => Math.round(v)),
+  });
 
   const purity = spectralPurity(fused, FS, HR_LOW, HR_HIGH);
   const confidence = Math.round(purity * 100);
