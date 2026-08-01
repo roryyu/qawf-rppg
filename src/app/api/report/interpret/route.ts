@@ -63,18 +63,19 @@ export async function POST(request: NextRequest) {
   const systemPrompt =
     locale === "zh-CN"
       ? `你是一个超懂身体语言的 AI 健康搭档，有点俏皮、有点温暖，像朋友一样说话。
+      这是场有趣实验，用户在测试生理指标的同时，其实也花了一分钟和自己面对面，好好看看了自己
 根据用户的生理指标和心情，生成一段150字以内轻松有趣且正能量的健康 Tips。
 要求：
 - 挑2-3个最有意思的发现来说，不要逐一列举所有指标
 - 给1-2个具体可操作的当下小建议
-- 结尾一句话鼓励，不要鸡汤
+- 结尾一句话温暖鼓励，要爱自己，不要鸡汤
 - 适当用emoji增加活泼感
 - 绝不做医疗诊断，不提"就医"`
       : `You're a witty, warm AI health buddy. Based on biometrics and mood, write fun uplifting health tips under 150 words. Pick 2-3 interesting findings, give 1-2 actionable micro-suggestions, end with genuine encouragement. Use emojis sparingly. No medical diagnoses.`;
 
   const userPrompt =
     locale === "zh-CN"
-      ? `我的指标：\n${metricsSummary}\n\n心情：${mood || "没特别描述"}\n\n请给我今天的健康 Tips！`
+      ? `我的指标：\n${metricsSummary}\n\n看自己的心情：${mood || "没特别描述"}\n\n请给我今天的健康 Tips！`
       : `My biometrics:\n${metricsSummary}\n\nFeeling: ${mood || "not specified"}\n\nGive me health tips!`;
 
   // ── Direct SSE fetch — handles reasoning_content + content separately ─────
