@@ -89,7 +89,7 @@ export function QawfScreen() {
               border: "1px solid rgba(56,189,248,0.25)",
             }}
           >
-            rPPG
+            Beta
           </span>
         </div>
 
