@@ -516,9 +516,8 @@ function computeSI(ibi: number[]): number | null {
  */
 function computeFI(hr: number | null, rmssd: number | null): number | null {
   if (hr === null || rmssd === null) return null;
-  // 典型 rmssd 范围 15–80ms；超出说明 IBI 仍有噪声，保守截断
-  const safeRmssd = Math.min(120, Math.max(10, rmssd));
-  // 心率越高、rmssd 越低 → 疲劳越高
+  // RMSSD 正常范围 15–80ms；>80ms 说明 IBI 仍有噪声跳变，截断到 80
+  const safeRmssd = Math.min(80, Math.max(10, rmssd));
   const raw = 50 + 0.6 * (hr - 70) - 0.5 * (safeRmssd - 40);
   return Math.min(100, Math.max(0, Math.round(raw)));
 }
