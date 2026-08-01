@@ -52,10 +52,12 @@ async function describeAppearance(photoBase64: string): Promise<string> {
             {
               type: "text",
               text: [
-                "Look at the person in this photo and describe their physical appearance",
-                "in ONE concise English sentence (max 30 words).",
-                "Include: approximate age range, hair color and style, skin tone, notable facial features.",
-                "Focus only on appearance — not emotion, background, or clothing.",
+                "Look at the person in this photo.",
+                "First identify their gender (man/woman/person).",
+                "Then describe their physical appearance in ONE concise English sentence (max 35 words).",
+                "MUST start with gender: 'A [man/woman/person] in their [age range]s,'",
+                "then include: hair color and style, skin tone, notable facial features.",
+                "Example: 'A woman in her 30s, shoulder-length black hair, fair skin, expressive almond eyes.'",
                 "Reply with ONLY the description sentence, no extra text.",
               ].join(" "),
             },
