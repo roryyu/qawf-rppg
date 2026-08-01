@@ -471,14 +471,42 @@ function computeSI(ibi: number[]): number | null {
   return Math.round(si * 10) / 10;
 }
 
+/**
+ * FI 疲劳指数 (0–100, 启发式)
+ * 只要 hr + rmssd 有值即可计算，无需等待 lfhf
+ */
 function computeFI(hr: number | null, rmssd: number | null): number | null {
   if (hr === null || rmssd === null) return null;
+  // 心率高 + RMSSD低 → 疲劳高
   return Math.min(100, Math.max(0, Math.round(50 + 0.6 * (hr - 70) - 0.5 * (rmssd - 40))));
 }
 
-function computeMWI(lfhf: number | null, rmssd: number | null): number | null {
-  if (lfhf === null || rmssd === null) return null;
-  return Math.min(100, Math.max(0, Math.round(40 + 12 * (lfhf - 1.5) + 0.4 * (50 - rmssd))));
+/**
+ * MWI 认知负荷 (0–100, 启发式)
+ * 优先使用 lfhf；若 lfhf 尚无数据，用 SI 做线性映射替代
+ * SI 典型范围 50–300：映射到等效 lfhf 1.0–3.0
+ */
+function computeMWI(
+  lfhf: number | null,
+  rmssd: number | null,
+  si: number | null
+): number | null {
+  if (rmssd === null) return null;
+
+  let effectiveLfhf: number;
+  if (lfhf !== null) {
+    effectiveLfhf = lfhf;
+  } else if (si !== null) {
+    // SI 50 → lfhf≈1.0, SI 300 → lfhf≈3.0，线性插值
+    effectiveLfhf = 1.0 + ((si - 50) / 250) * 2.0;
+    effectiveLfhf = Math.min(4, Math.max(0.5, effectiveLfhf));
+  } else {
+    return null;
+  }
+
+  return Math.min(100, Math.max(0,
+    Math.round(40 + 12 * (effectiveLfhf - 1.5) + 0.4 * (50 - rmssd))
+  ));
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
