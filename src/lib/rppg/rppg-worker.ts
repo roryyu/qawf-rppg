@@ -343,7 +343,8 @@ function detectPeaks(signal: Float64Array, fs: number): number[] {
   const minDist = Math.round(fs * 60 / 220); // min samples between peaks (220 BPM max)
   const mu = mean(signal);
   const s = std(signal, mu);
-  const threshold = mu + 0.25 * s;
+  // Lower threshold (0.15σ instead of 0.25σ) to reduce missed beats in noisy signal
+  const threshold = mu + 0.15 * s;
   const peaks: number[] = [];
   let lastPeak = -minDist;
 
@@ -410,12 +411,12 @@ function computeRMSSD(ibi: number[]): number | null {
 }
 
 function computeLFHF(ibi: number[], fs: number): number | null {
-  if (ibi.length < 20) return null; // need ≥ 30s at ~30Hz
+  if (ibi.length < 16) return null; // relaxed from 20 to 16
   // Build uniform tachogram from cumulative IBI times
   const cumT: number[] = [0];
   for (let i = 0; i < ibi.length - 1; i++) cumT.push(cumT[i] + ibi[i] / 1000);
   const totalSec = cumT[cumT.length - 1];
-  if (totalSec < 30) return null;
+  if (totalSec < 20) return null; // relaxed from 30s to 20s
 
   const tacho_fs = 4; // Hz
   const tacheN = Math.floor(totalSec * tacho_fs);
