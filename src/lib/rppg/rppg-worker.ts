@@ -443,7 +443,7 @@ function computeLFHF(ibi: number[], fs: number): number | null {
 }
 
 function computeSI(ibi: number[]): number | null {
-  if (ibi.length < 30) return null; // need ~120s
+  if (ibi.length < 20) return null; // relaxed from 30 to 20
   const maxIBI = Math.max(...ibi);
   const minIBI = Math.min(...ibi);
   const mxDmn = (maxIBI - minIBI) / 1000; // seconds
