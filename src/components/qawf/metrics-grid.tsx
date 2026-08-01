@@ -20,11 +20,11 @@ const METRICS: MetricConfig[] = [
   { key: "hr",    i18nKey: "metrics.hr",    minGate: 0,   accentFrom: "#f472b6", accentTo: "#fb7185", format: (v) => `${Math.round(v)}` },
   { key: "rr",    i18nKey: "metrics.rr",    minGate: 0,   accentFrom: "#38bdf8", accentTo: "#67e8f9", format: (v) => `${v.toFixed(1)}` },
   { key: "spo2",  i18nKey: "metrics.spo2",  minGate: 0,   isExperimental: true,  accentFrom: "#34d399", accentTo: "#6ee7b7", format: (v) => `${v.toFixed(1)}` },
-  { key: "rmssd", i18nKey: "metrics.rmssd", minGate: 30,  accentFrom: "#818cf8", accentTo: "#a78bfa", format: (v) => `${v.toFixed(1)}` },
-  { key: "lfhf",  i18nKey: "metrics.lfhf",  minGate: 180, accentFrom: "#6c63ff", accentTo: "#818cf8", format: (v) => `${v.toFixed(2)}` },
-  { key: "si",    i18nKey: "metrics.si",    minGate: 120, accentFrom: "#fbbf24", accentTo: "#fcd34d", format: (v) => `${v.toFixed(1)}` },
-  { key: "fi",    i18nKey: "metrics.fi",    minGate: 180, isHeuristic: true,     accentFrom: "#fb923c", accentTo: "#fbbf24", format: (v) => `${Math.round(v)}` },
-  { key: "mwi",   i18nKey: "metrics.mwi",   minGate: 180, isHeuristic: true,     accentFrom: "#c084fc", accentTo: "#e879f9", format: (v) => `${Math.round(v)}` },
+  { key: "rmssd", i18nKey: "metrics.rmssd", minGate: 20,  accentFrom: "#818cf8", accentTo: "#a78bfa", format: (v) => `${v.toFixed(1)}` },
+  { key: "lfhf",  i18nKey: "metrics.lfhf",  minGate: 60,  accentFrom: "#6c63ff", accentTo: "#818cf8", format: (v) => `${v.toFixed(2)}` },
+  { key: "si",    i18nKey: "metrics.si",    minGate: 60,  accentFrom: "#fbbf24", accentTo: "#fcd34d", format: (v) => `${v.toFixed(1)}` },
+  { key: "fi",    i18nKey: "metrics.fi",    minGate: 20,  isHeuristic: true,     accentFrom: "#fb923c", accentTo: "#fbbf24", format: (v) => `${Math.round(v)}` },
+  { key: "mwi",   i18nKey: "metrics.mwi",   minGate: 20,  isHeuristic: true,     accentFrom: "#c084fc", accentTo: "#e879f9", format: (v) => `${Math.round(v)}` },
 ];
 
 // ── Confidence ring ──────────────────────────────────────────────────────────
