@@ -85,9 +85,17 @@ async function describeAppearance(photoBase64: string): Promise<string> {
 
 // ── Stage 2: Pollinations.ai text → image ─────────────────────────────────────
 async function generateCartoonImage(appearanceDesc: string): Promise<string> {
+  // Extract gender keyword from vision description to reinforce in image prompt
+  const lower = appearanceDesc.toLowerCase();
+  const genderHint = lower.includes(" woman") || lower.includes(" female") || lower.includes(" girl")
+    ? "female cartoon character"
+    : lower.includes(" man") || lower.includes(" male") || lower.includes(" boy")
+      ? "male cartoon character"
+      : "cartoon character";
+
   const cartoonPrompt = [
     appearanceDesc,
-    "transformed into a vibrant cartoon character full of vitality and positive energy",
+    `transformed into a vibrant ${genderHint} full of vitality and positive energy`,
     "colorful flat-design illustration, clean bold outlines, cel-shading",
     "glowing neon aura, deep space blue-purple background with energy particles",
     "radiant hero portrait from a sci-fi wellness game",
