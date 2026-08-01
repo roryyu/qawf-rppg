@@ -367,9 +367,33 @@ function peaksToIBI(peaks: number[], fs: number): number[] {
   const ibi: number[] = [];
   for (let i = 1; i < peaks.length; i++) {
     const ms = ((peaks[i] - peaks[i - 1]) / fs) * 1000;
-    if (ms >= 300 && ms <= 1800) ibi.push(ms);
+    // 500–1400ms = 43–120 BPM；300ms(200BPM)是噪声，收紧下限
+    if (ms >= 500 && ms <= 1400) ibi.push(ms);
   }
   return ibi;
+}
+
+/**
+ * 对 IBI 序列做相邻差值过滤，去除噪声峰值引起的跳变。
+ * 相邻两个 IBI 差值 > 300ms 时丢弃偏离均值更大的那个。
+ */
+function cleanIBI(ibi: number[]): number[] {
+  if (ibi.length < 3) return ibi;
+  const mu = ibi.reduce((a, b) => a + b, 0) / ibi.length;
+  const out: number[] = [ibi[0]];
+  for (let i = 1; i < ibi.length; i++) {
+    const diff = Math.abs(ibi[i] - out[out.length - 1]);
+    if (diff <= 300) {
+      out.push(ibi[i]);
+    } else {
+      // 保留更接近均值的那个
+      const prevCloser = Math.abs(out[out.length - 1] - mu) <=
+                         Math.abs(ibi[i] - mu);
+      if (!prevCloser) out[out.length - 1] = ibi[i];
+      // 否则直接丢弃 ibi[i]
+    }
+  }
+  return out;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
