@@ -324,6 +324,7 @@ export function QawfScreen() {
       {showTips && state.metrics && (
         <TipsModal
           metrics={state.metrics}
+          capturedPhoto={capturedPhotoRef.current ?? undefined}
           onClose={() => setShowTips(false)}
         />
       )}
