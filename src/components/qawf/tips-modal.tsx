@@ -525,6 +525,7 @@ export function TipsModal({ metrics, capturedPhoto, onClose }: TipsModalProps) {
           from { transform: scaleY(0.5); opacity: 0.7; }
           to   { transform: scaleY(1.5); opacity: 1; }
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
