@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   // Create a 1024×1024 all-opaque mask (gpt-image-1 requires a mask for edits)
   // We want to re-style the whole image, so the mask is entirely white (edit everywhere)
   const maskBytes = createWhiteMaskPng(1024, 1024);
-  const maskBlob  = new Blob([maskBytes], { type: "image/png" });
+  const maskBlob  = new Blob([maskBytes.buffer as ArrayBuffer], { type: "image/png" });
 
   const form = new FormData();
   form.append("model",  model);
