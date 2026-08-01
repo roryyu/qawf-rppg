@@ -12,6 +12,11 @@ import { TipsModal } from "@/components/qawf/tips-modal";
 import type { Metrics8 } from "@/lib/rppg/rppg-worker";
 
 /** Returns true only when all 8 metrics have a numeric value */
+/**
+ * 判定「8项指标已就绪」，可以展示生成 Tips 按钮。
+ * lfhf 不计入必要条件（它仍需 60s+ 且 IBI 数量够，可能较晚出值）；
+ * fi / mwi 已有降级路径，rmssd 有值时它们就会出值。
+ */
 function allMetricsReady(m: Metrics8 | null): m is Metrics8 {
   if (!m) return false;
   return (
@@ -19,7 +24,6 @@ function allMetricsReady(m: Metrics8 | null): m is Metrics8 {
     m.rr    !== null &&
     m.spo2  !== null &&
     m.rmssd !== null &&
-    m.lfhf  !== null &&
     m.si    !== null &&
     m.fi    !== null &&
     m.mwi   !== null
