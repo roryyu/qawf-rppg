@@ -264,17 +264,23 @@ function MetricCard({ cfg, value, elapsed, isActive }: MetricCardProps) {
             {t(`${cfg.i18nKey}.abbr`)}
           </span>
 
-          {/* Description text */}
-          <p
-            className="text-[9.5px] leading-[1.55] flex-1 overflow-y-auto"
-            style={{
-              color: "rgba(226,228,240,0.72)",
-              fontFamily: "var(--font-barlow)",
-              scrollbarWidth: "none",
-            }}
-          >
-            {desc}
-          </p>
+          {/* Description text — use wrapper+scale to bypass browser 12px min-font */}
+          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+            <p
+              style={{
+                fontSize: "12px",
+                lineHeight: "1.55",
+                color: "rgba(226,228,240,0.72)",
+                fontFamily: "var(--font-barlow)",
+                transform: "scale(0.8)",
+                transformOrigin: "top left",
+                width: "125%",   /* compensate for 0.8 scale so text doesn't clip */
+                margin: 0,
+              }}
+            >
+              {desc}
+            </p>
+          </div>
         </div>
       </div>
     </div>
