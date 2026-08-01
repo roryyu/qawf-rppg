@@ -405,6 +405,20 @@ function computeHR(fused: Float64Array, fs: number): number | null {
   return f > 0 ? Math.round(f * 60) : null;
 }
 
+/**
+ * IBI 序列中位数推算心率，比 FFT 主频更稳健（不受噪声伪峰干扰）。
+ * 至少需要 5 个干净 IBI。
+ */
+function computeHRFromIBI(ibi: number[]): number | null {
+  if (ibi.length < 5) return null;
+  const sorted = [...ibi].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  if (median <= 0) return null;
+  const hr = Math.round(60000 / median);
+  // 保留生理合理范围 40–180 BPM
+  return hr >= 40 && hr <= 180 ? hr : null;
+}
+
 function computeRR(rawSignal: Float64Array, fs: number): number | null {
   const bp = bandpass(rawSignal, fs, RR_LOW, RR_HIGH);
   const f = dominantFreq(bp, fs, RR_LOW, RR_HIGH);
