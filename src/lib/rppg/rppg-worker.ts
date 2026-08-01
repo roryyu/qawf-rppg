@@ -639,15 +639,18 @@ self.onmessage = (ev: MessageEvent) => {
   const rmssd = ibi.length >= 10 && elapsedSec >= 20 ? computeRMSSD(ibi) : null;
   const lfhf  = elapsedSec >= 60 ? computeLFHF(ibi, FS) : null;
   const si    = ibi.length >= 20 && elapsedSec >= 60 ? computeSI(ibi) : null;
-  const fi    = computeFI(hr, rmssd);
-  const mwi   = computeMWI(lfhf, rmssd, si);
+
+  // FI/MWI 用 IBI 中位数心率，比 FFT 主频抗噪声更强
+  const hrForFormula = computeHRFromIBI(ibi) ?? hr;
+  const fi  = computeFI(hrForFormula, rmssd);
+  const mwi = computeMWI(lfhf, rmssd, si);
 
   // Debug log — remove before release
   // eslint-disable-next-line no-console
   console.log("[worker]", {
     elapsed: Math.round(elapsedSec), peaks: peaks.length,
     rawIbi: rawIbi.length, cleanedIbi: ibi.length,
-    hr, rmssd, lfhf, si, fi, mwi,
+    hr, hrForFormula, rmssd, lfhf, si, fi, mwi,
     ibiSample: ibi.slice(0, 6).map(v => Math.round(v)),
   });
 
