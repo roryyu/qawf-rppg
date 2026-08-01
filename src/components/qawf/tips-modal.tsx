@@ -1,16 +1,19 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { Metrics8 } from "@/lib/rppg/rppg-worker";
 
 interface TipsModalProps {
   metrics: Metrics8;
+  /** base64 JPEG (no data-url prefix) captured during measurement */
+  capturedPhoto?: string;
   onClose: () => void;
 }
 
-type VoiceState = "idle" | "listening" | "processing" | "done" | "unsupported" | "error";
-type GenState   = "idle" | "loading" | "streaming" | "done" | "error";
+type VoiceState  = "idle" | "listening" | "processing" | "done" | "unsupported" | "error";
+type GenState    = "idle" | "loading" | "streaming" | "done" | "error";
+type AvatarState = "idle" | "loading" | "done" | "error" | "unavailable";
 
 // ── MediaRecorder support check ───────────────────────────────────────────────
 function mediaRecorderSupported(): boolean {
@@ -37,20 +40,51 @@ function bestMimeType(): string {
   return "";
 }
 
-export function TipsModal({ metrics, onClose }: TipsModalProps) {
+export function TipsModal({ metrics, capturedPhoto, onClose }: TipsModalProps) {
   const { t, i18n } = useTranslation();
 
-  const [mood,       setMood]       = useState("");
-  const [voiceState, setVoiceState] = useState<VoiceState>(
+  const [mood,         setMood]         = useState("");
+  const [voiceState,   setVoiceState]   = useState<VoiceState>(
     mediaRecorderSupported() ? "idle" : "unsupported"
   );
-  const [genState,   setGenState]   = useState<GenState>("idle");
-  const [tipsText,   setTipsText]   = useState("");
-  const [copied,     setCopied]     = useState(false);
+  const [genState,     setGenState]     = useState<GenState>("idle");
+  const [tipsText,     setTipsText]     = useState("");
+  const [copied,       setCopied]       = useState(false);
+  const [avatarState,  setAvatarState]  = useState<AvatarState>(capturedPhoto ? "idle" : "unavailable");
+  const [avatarBase64, setAvatarBase64] = useState<string | null>(null);
 
-  const mediaRecRef  = useRef<MediaRecorder | null>(null);
-  const chunksRef    = useRef<Blob[]>([]);
-  const tipsRef      = useRef<HTMLDivElement>(null);
+  const mediaRecRef = useRef<MediaRecorder | null>(null);
+  const chunksRef   = useRef<Blob[]>([]);
+  const tipsRef     = useRef<HTMLDivElement>(null);
+
+  // ── Generate avatar ───────────────────────────────────────────────────────
+  const generateAvatar = useCallback(async () => {
+    if (!capturedPhoto) { setAvatarState("unavailable"); return; }
+    setAvatarState("loading");
+    try {
+      const res = await fetch("/api/avatar", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ photo: capturedPhoto }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        if (res.status === 503 || body?.error?.includes("not configured")) {
+          setAvatarState("unavailable"); return;
+        }
+        setAvatarState("error"); return;
+      }
+      const data = await res.json() as { avatarBase64?: string };
+      if (data.avatarBase64) { setAvatarBase64(data.avatarBase64); setAvatarState("done"); }
+      else setAvatarState("error");
+    } catch { setAvatarState("error"); }
+  }, [capturedPhoto]);
+
+  // Kick off avatar generation as soon as Modal mounts
+  useEffect(() => {
+    if (capturedPhoto) generateAvatar();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Start recording ───────────────────────────────────────────────────────
   const startRecording = useCallback(async () => {
