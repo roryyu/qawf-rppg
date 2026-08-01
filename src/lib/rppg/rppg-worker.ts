@@ -535,7 +535,7 @@ function computeMWI(
 ): number | null {
   if (rmssd === null) return null;
 
-  const safeRmssd = Math.min(120, Math.max(10, rmssd));
+  const safeRmssd = Math.min(80, Math.max(10, rmssd));
 
   let effectiveLfhf: number;
   if (lfhf !== null) {
