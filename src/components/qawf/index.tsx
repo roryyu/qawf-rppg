@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useRppg } from "@/lib/rppg/use-rppg";
 import { CameraPanel } from "@/components/qawf/camera-panel";
@@ -30,6 +30,24 @@ function allMetricsReady(m: Metrics8 | null): m is Metrics8 {
   );
 }
 
+/** Grab a JPEG base64 snapshot from the video element */
+function captureFrame(video: HTMLVideoElement, quality = 0.85): string | null {
+  try {
+    const w = video.videoWidth  || 640;
+    const h = video.videoHeight || 480;
+    const c = document.createElement("canvas");
+    c.width  = w;
+    c.height = h;
+    const ctx = c.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(video, 0, 0, w, h);
+    // Return just the base64 payload (no data-url prefix)
+    return c.toDataURL("image/jpeg", quality).replace(/^data:image\/jpeg;base64,/, "");
+  } catch {
+    return null;
+  }
+}
+
 export function QawfScreen() {
   const { t } = useTranslation();
   const videoRef  = useRef<HTMLVideoElement | null>(null);
@@ -38,15 +56,64 @@ export function QawfScreen() {
 
   const [showTips, setShowTips] = useState(false);
 
+  // Best face snapshot taken during measurement (base64 JPEG, no prefix)
+  const capturedPhotoRef = useRef<string | null>(null);
+  const captureIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const isActive  = state.status === "measuring" || state.status === "detecting";
   const canStart  = state.status === "idle" || state.status === "done" || state.status === "error";
   const metricsOK = allMetricsReady(state.metrics);
 
-  function handleGenerateTips() {
-    // Stop data collection first, then open modal
+  // Start periodic capture once measuring begins; stop when done
+  useEffect(() => {
+    if (isActive) {
+      // Attempt a snapshot every 5s; only keep if video has a real frame
+      captureIntervalRef.current = setInterval(() => {
+        const video = videoRef.current;
+        if (!video || video.readyState < 2) return;
+        const elapsed = state.elapsed / 1000;
+        // Only capture after 8s to skip early dark/blurry frames
+        if (elapsed < 8) return;
+        const snap = captureFrame(video);
+        if (snap) capturedPhotoRef.current = snap; // always keep latest good frame
+      }, 5000);
+    } else {
+      if (captureIntervalRef.current) {
+        clearInterval(captureIntervalRef.current);
+        captureIntervalRef.current = null;
+      }
+    }
+    return () => {
+      if (captureIntervalRef.current) {
+        clearInterval(captureIntervalRef.current);
+        captureIntervalRef.current = null;
+      }
+    };
+  }, [isActive, state.elapsed]);
+
+  // Also do an immediate capture when metrics first become ready
+  const prevMetricsOK = useRef(false);
+  useEffect(() => {
+    if (metricsOK && !prevMetricsOK.current) {
+      const video = videoRef.current;
+      if (video && video.readyState >= 2 && !capturedPhotoRef.current) {
+        const snap = captureFrame(video);
+        if (snap) capturedPhotoRef.current = snap;
+      }
+    }
+    prevMetricsOK.current = metricsOK;
+  }, [metricsOK]);
+
+  const handleGenerateTips = useCallback(() => {
+    // Grab one last frame right before stopping, if we don't have one yet
+    const video = videoRef.current;
+    if (video && video.readyState >= 2 && !capturedPhotoRef.current) {
+      const snap = captureFrame(video);
+      if (snap) capturedPhotoRef.current = snap;
+    }
     if (isActive) stop();
     setShowTips(true);
-  }
+  }, [isActive, stop]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: "#07071a", color: "#e2e4f0" }}>
