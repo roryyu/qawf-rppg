@@ -68,11 +68,10 @@ export function TipsModal({ metrics, capturedPhoto, onClose }: TipsModalProps) {
         body:    JSON.stringify({ photo: capturedPhoto }),
       });
       if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        if (res.status === 503 || body?.error?.includes("not configured")) {
-          setAvatarState("unavailable"); return;
-        }
-        setAvatarState("error"); return;
+        // 503 = feature not configured at all → hide silently
+        // 4xx/5xx = generation failed → show retry
+        setAvatarState(res.status === 503 ? "unavailable" : "error");
+        return;
       }
       const data = await res.json() as { avatarBase64?: string };
       if (data.avatarBase64) { setAvatarBase64(data.avatarBase64); setAvatarState("done"); }
