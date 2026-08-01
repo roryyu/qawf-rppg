@@ -327,6 +327,8 @@ export function TipsModal({ metrics, capturedPhoto, onClose }: TipsModalProps) {
             ))}
           </div>
 
+          </div>{/* end avatar+pills row */}
+
           {/* Mood input */}
           {showMoodInput && (
             <div className="flex flex-col gap-2">
