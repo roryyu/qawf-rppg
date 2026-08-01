@@ -253,8 +253,61 @@ export function TipsModal({ metrics, capturedPhoto, onClose }: TipsModalProps) {
         {/* ── Body ── */}
         <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
 
+          {/* Avatar + metric pills row */}
+          <div className="flex items-start gap-3">
+
+            {/* ── Avatar panel (hidden when feature unavailable) ── */}
+            {avatarState !== "unavailable" && (
+              <div
+                className="shrink-0 rounded-2xl overflow-hidden flex items-center justify-center"
+                style={{
+                  width:      "88px",
+                  height:     "88px",
+                  background: "rgba(108,99,255,0.06)",
+                  border:     "1px solid rgba(108,99,255,0.2)",
+                  boxShadow:  avatarState === "done"
+                    ? "0 0 28px rgba(108,99,255,0.4), 0 0 10px rgba(56,189,248,0.2)"
+                    : "none",
+                  transition: "box-shadow 600ms ease",
+                }}
+              >
+                {avatarState === "loading" && (
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div className="relative w-9 h-9">
+                      <div className="absolute inset-0 rounded-full"
+                        style={{ border: "2px solid transparent", borderTop: "2px solid #6c63ff", animation: "spin 1s linear infinite" }} />
+                      <div className="absolute inset-[5px] rounded-full"
+                        style={{ border: "1.5px solid transparent", borderTop: "1.5px solid #38bdf8", animation: "spin 0.65s linear infinite reverse" }} />
+                    </div>
+                    <span className="text-[7.5px] text-center leading-tight px-0.5"
+                      style={{ color: "rgba(129,140,248,0.5)", fontFamily: "var(--font-barlow)" }}>
+                      {t("tips.avatar_generating")}
+                    </span>
+                  </div>
+                )}
+                {avatarState === "done" && avatarBase64 && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`data:image/png;base64,${avatarBase64}`}
+                    alt={t("tips.avatar_alt")}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                {avatarState === "error" && (
+                  <div className="flex flex-col items-center gap-1 px-2">
+                    <span style={{ fontSize: 22 }}>🎨</span>
+                    <button onClick={generateAvatar}
+                      className="text-[8px] font-bold text-center"
+                      style={{ color: "rgba(129,140,248,0.6)", fontFamily: "var(--font-barlow)" }}>
+                      {t("tips.avatar_retry")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
           {/* Metric pills */}
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 flex-1 content-start">
             {([
               { k: "HR",    v: metrics.hr,    u: " bpm",  c: "#f472b6" },
               { k: "RR",    v: metrics.rr,    u: "/min",  c: "#38bdf8" },
