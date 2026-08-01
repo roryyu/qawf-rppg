@@ -66,7 +66,7 @@ export function QawfScreen() {
             }}
           >
             <span className="text-[9px] font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-ibm-plex-mono)" }}>
-              QW
+              LOOK
             </span>
           </div>
           <span
@@ -78,7 +78,7 @@ export function QawfScreen() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            QAWF
+            看看你自己
           </span>
           <span
             className="hidden sm:inline text-[9px] px-1.5 py-0.5 rounded font-bold tracking-widest"
