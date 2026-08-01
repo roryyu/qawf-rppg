@@ -608,25 +608,27 @@ self.onmessage = (ev: MessageEvent) => {
 
   // ── Step 6: Metrics ───────────────────────────────────────────────────────
   const peaks = detectPeaks(fused, FS);
-  const ibi = peaksToIBI(peaks, FS);
+  const rawIbi = peaksToIBI(peaks, FS);
+  const ibi = cleanIBI(rawIbi); // 去除跳变噪声
 
   const elapsedSec = elapsed / 1000;
 
   const hr    = computeHR(fused, FS);
-  const rr    = computeRR(Gn, FS);     // respiration modulates G channel
+  const rr    = computeRR(Gn, FS);
   const spo2  = computeSpO2(R, G, B);
-  const rmssd = ibi.length >= 10 && elapsedSec >= 20  ? computeRMSSD(ibi) : null;
-  const lfhf  = elapsedSec >= 60  ? computeLFHF(ibi, FS) : null;
-  const si    = ibi.length >= 20 && elapsedSec >= 60   ? computeSI(ibi) : null;
+  const rmssd = ibi.length >= 10 && elapsedSec >= 20 ? computeRMSSD(ibi) : null;
+  const lfhf  = elapsedSec >= 60 ? computeLFHF(ibi, FS) : null;
+  const si    = ibi.length >= 20 && elapsedSec >= 60 ? computeSI(ibi) : null;
   const fi    = computeFI(hr, rmssd);
   const mwi   = computeMWI(lfhf, rmssd, si);
 
   // Debug log — remove before release
   // eslint-disable-next-line no-console
   console.log("[worker]", {
-    elapsed: Math.round(elapsedSec), peaks: peaks.length, ibi: ibi.length,
+    elapsed: Math.round(elapsedSec), peaks: peaks.length,
+    rawIbi: rawIbi.length, cleanedIbi: ibi.length,
     hr, rmssd, lfhf, si, fi, mwi,
-    ibiSample: ibi.slice(0, 5).map(v => Math.round(v)),
+    ibiSample: ibi.slice(0, 6).map(v => Math.round(v)),
   });
 
   const purity = spectralPurity(fused, FS, HR_LOW, HR_HIGH);
